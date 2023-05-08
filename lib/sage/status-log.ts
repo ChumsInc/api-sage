@@ -1,6 +1,6 @@
 import Debug from 'debug';
 import {mysql2Pool} from 'chums-local-modules';
-import {NextFunction, Request, Response} from "express";
+import {Request, Response} from "express";
 import {WebSocketServer} from "ws";
 import {RowDataPacket} from "mysql2";
 
@@ -27,7 +27,7 @@ export interface TableStatus {
     enabled: boolean,
 }
 
-export interface TableStatusRow extends Omit<TableStatus, 'nightlyUpdate'|'hourlyUpdate'|'enabled'|'linked'>, RowDataPacket {
+export interface TableStatusRow extends Omit<TableStatus, 'nightlyUpdate' | 'hourlyUpdate' | 'enabled' | 'linked'>, RowDataPacket {
     nightlyUpdate: number;
     hourlyUpdate: number;
     enabled: number;
@@ -79,7 +79,7 @@ export async function loadStatus({company, sageTable}: LoadStatusProps): Promise
                 linked: !!row.hourlyUpdate,
             }
         });
-    } catch(err:unknown) {
+    } catch (err: unknown) {
         if (err instanceof Error) {
             debug("loadStatus()", err.message);
             return Promise.reject(err);
@@ -94,11 +94,11 @@ export async function wsSendStatus(server: WebSocketServer, params: { table?: st
     try {
         const dbStatus = await loadStatus({company: 'chums'});
         const dbStatusJSON = JSON.stringify({dbStatus, current: params});
-        server.clients.forEach((client:any) => {
+        server.clients.forEach((client: any) => {
             client.send(dbStatusJSON);
         })
         return dbStatus;
-    } catch(err:unknown) {
+    } catch (err: unknown) {
         if (err instanceof Error) {
             debug("wsSendStatus()", err.message);
             return Promise.reject(err);
@@ -109,7 +109,7 @@ export async function wsSendStatus(server: WebSocketServer, params: { table?: st
 
 }
 
-export async function triggerSendStatus(req: RequestWithSockets, res: Response, next: NextFunction) {
+export async function triggerSendStatus(req: RequestWithSockets, res: Response) {
     try {
         if (!req.wsServer) {
             return res.json({error: 'WebSocket service missing'});
@@ -117,7 +117,7 @@ export async function triggerSendStatus(req: RequestWithSockets, res: Response, 
 
         const dbStatus = await wsSendStatus(req.wsServer, req.params);
         res.json({dbStatus});
-    } catch(err:unknown) {
+    } catch (err: unknown) {
         if (err instanceof Error) {
             debug("triggerSendStatus()", err.message);
             return Promise.reject(err);
@@ -131,7 +131,7 @@ export async function getStatusLog(req: Request, res: Response) {
     try {
         const dbStatus = await loadStatus(req.params);
         res.json({dbStatus});
-    } catch(err:unknown) {
+    } catch (err: unknown) {
         if (err instanceof Error) {
             debug("getStatusLog()", err.message);
             return Promise.reject(err);
