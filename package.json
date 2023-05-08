@@ -1,6 +1,6 @@
 {
   "name": "api-sage",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "CHUMS Sage db utils node microservice",
   "main": "index.js",
   "type": "module",
