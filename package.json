@@ -1,0 +1,55 @@
+{
+  "name": "api-sage",
+  "version": "2.0.0",
+  "description": "CHUMS Sage db utils node microservice",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "version": "auto-changelog -p && git add CHANGELOG.md"
+  },
+  "author": "Steve Montgomery",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "chums-local-modules": "github:UtahGooner/chums-local-modules",
+    "compression": "^1.7.4",
+    "cookie": "^0.5.0",
+    "cookie-parser": "^1.4.5",
+    "debug": "^4.3.1",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.1",
+    "helmet": "^6.0.0",
+    "jsonwebtoken": "^8.5.1",
+    "mysql2": "^2.2.5",
+    "node-fetch": "^3.2.10",
+    "pug": "^3.0.0",
+    "ws": "^8.6.0"
+  },
+  "devDependencies": {
+    "@types/body-parser": "^1.19.0",
+    "@types/compression": "^1.7.0",
+    "@types/cookie-parser": "^1.4.2",
+    "@types/express": "^4.17.11",
+    "@types/node": "^18.7.14",
+    "@types/ws": "^8.5.3",
+    "auto-changelog": "^2.4.0",
+    "nodemon": "^2.0.19"
+  },
+  "auto-changelog": {
+    "template": "keepachangelog",
+    "unreleased": true,
+    "commitLimit": false
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "node_modules"
+    ],
+    "delay": 1000,
+    "watch": [
+      "src",
+      "views"
+    ]
+  }
+}
