@@ -2,3 +2,4 @@
 /lib/sage/status-log.js
 /node_modules
 /.env
+/.idea
