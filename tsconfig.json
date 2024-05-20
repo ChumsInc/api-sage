@@ -2,6 +2,7 @@
   "extends": "@tsconfig/node18",
   "compilerOptions": {
     "allowJs": true,
+    "allowUnusedLabels": true,
     "emitDeclarationOnly": false,
     "module": "ES2022"
   },
