@@ -25,13 +25,16 @@ export interface TableStatus {
     quickUpdate: boolean,
     linked: boolean,
     enabled: boolean,
+    parentEnabled: boolean|null,
+    timestamp: string;
 }
 
-export interface TableStatusRow extends Omit<TableStatus, 'nightlyUpdate' | 'hourlyUpdate' | 'enabled' | 'linked'>, RowDataPacket {
+export interface TableStatusRow extends Omit<TableStatus, 'nightlyUpdate' | 'hourlyUpdate' | 'enabled' | 'linked'|'parentEnabled'>, RowDataPacket {
     nightlyUpdate: number;
     hourlyUpdate: number;
     enabled: number;
     linked: number;
+    parentEnabled: number|null;
 }
 
 
@@ -45,23 +48,24 @@ export async function loadStatus({company, sageTable}: LoadStatusProps): Promise
         if (!company) {
             company = 'chums';
         }
-        const sql = `SELECT Company,
-                            SageTable,
-                            dbTable,
-                            dateUpdated,
-                            dateCompleted,
-                            status,
-                            errorMessage,
-                            duration,
-                            numRows,
-                            nightlyUpdate,
-                            hourlyUpdate,
-                            quickUpdate,
-                            linked,
-                            enabled,
-                            timestamp
-                     FROM c2.DB_UpdateStatus
-                     WHERE Company = :company
+        const sql = `SELECT db.Company,
+                            db.SageTable,
+                            db.dbTable,
+                            db.dateUpdated,
+                            db.dateCompleted,
+                            db.status,
+                            db.errorMessage,
+                            db.duration,
+                            db.numRows,
+                            db.nightlyUpdate,
+                            db.hourlyUpdate,
+                            db.quickUpdate,
+                            db.linked,
+                            db.enabled,
+                            (select enabled FROM c2.DB_UpdateStatus where Company = 'chums' and SageTable = db.linkedToTable) as  parentEnabled,
+                            db.timestamp
+                     FROM c2.DB_UpdateStatus db                    
+                     WHERE Company = 'chums'
                        AND (IFNULL(:sageTable, '') = '' OR SageTable = :sageTable)
                      ORDER BY Company, SageTable
         `;
@@ -76,7 +80,8 @@ export async function loadStatus({company, sageTable}: LoadStatusProps): Promise
                 nightlyUpdate: !!row.nightlyUpdate,
                 hourlyUpdate: !!row.hourlyUpdate,
                 enabled: !!row.enabled,
-                linked: !!row.hourlyUpdate,
+                linked: !!row.linked,
+                parentEnabled: row.parentEnabled === 1,
             }
         });
     } catch (err: unknown) {
