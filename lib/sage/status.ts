@@ -4,19 +4,12 @@ import path from 'node:path';
 import {TABLES} from "./tables.js";
 import {Request, Response} from "express";
 import {ValidatedUser} from "chums-local-modules";
+import {LoadStatusFileResponse} from "./sage-transfer-types.js";
 
 const debug = Debug('chums:lib:sage:transfer');
 const log_path = '/var/www/intranet.chums.com/jobs/status';
 const log_file = '%TABLE%.status';
 
-export interface LoadStatusFileResponse {
-    file: string;
-    status: string;
-}
-
-export interface LoadStatusFileProps {
-    table: string;
-}
 
 async function loadStatusFile(table: string): Promise<LoadStatusFileResponse> {
     if (TABLES[table] === undefined) {
@@ -76,7 +69,7 @@ export async function readStatus(table = null): Promise<ReadStatusResponse> {
 
 export const getStatus = async (req: Request, res: Response) => {
     try {
-        const data = await loadStatusFile(req.params.table ?? 'N/A');
+        const data = await loadStatusFile(req.params.table as string ?? 'N/A');
         res.json(data);
     } catch (err: unknown) {
         if (err instanceof Error) {
@@ -90,7 +83,7 @@ export const getStatus = async (req: Request, res: Response) => {
 
 export const getAllStatuses = async (req: Request, res: Response<unknown, ValidatedUser>) => {
     try {
-        debug('getAllStatuses()', res.locals.auth.profile.user.id);
+        debug('getAllStatuses()', res.locals.auth?.profile?.user.id);
         const result = await readStatus();
         res.json(result);
     } catch (err: unknown) {

@@ -7,7 +7,7 @@ import {RowDataPacket} from "mysql2";
 const debug = Debug('chums:lib:sage:status-log');
 
 export interface RequestWithSockets extends Request {
-    wsServer: WebSocketServer
+    wsServer?: WebSocketServer
 }
 
 export interface TableStatus {
@@ -114,10 +114,11 @@ export async function wsSendStatus(server: WebSocketServer, params: { table?: st
 
 }
 
-export async function triggerSendStatus(req: RequestWithSockets, res: Response) {
+export async function triggerSendStatus(req: RequestWithSockets, res: Response):Promise<void> {
     try {
         if (!req.wsServer) {
-            return res.json({error: 'WebSocket service missing'});
+            res.json({error: 'WebSocket service missing'});
+            return;
         }
 
         const dbStatus = await wsSendStatus(req.wsServer, req.params);
@@ -132,7 +133,7 @@ export async function triggerSendStatus(req: RequestWithSockets, res: Response) 
     }
 }
 
-export async function getStatusLog(req: Request, res: Response) {
+export async function getStatusLog(req: Request, res: Response):Promise<void> {
     try {
         const dbStatus = await loadStatus(req.params);
         res.json({dbStatus});

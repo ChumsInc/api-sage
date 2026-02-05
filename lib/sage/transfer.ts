@@ -5,13 +5,11 @@ import {exec} from 'node:child_process';
 import {handleUpload} from "chums-local-modules";
 import {Request, Response} from 'express'
 import {RequestWithSockets} from "./status-log.js";
+import {ProcessFileResult, UploadFile} from "./sage-transfer-types.js";
 
 const debug = Debug('chums:lib:sage:transfer');
 
-const processFile = ({path, table}: {
-    path: string;
-    table?: string;
-}) => {
+function processFile({path, table}: UploadFile): Promise<ProcessFileResult> {
     // debug('processFile()', path, table);
     const params = `--defaults-file=${process.cwd()}/.my.cnf`;
     return new Promise((resolve, reject) => {
@@ -29,13 +27,14 @@ const processFile = ({path, table}: {
             })
         })
     })
-};
+}
 
-const uploadFile = async (req:Request) => {
+async function uploadFile(req: Request): Promise<UploadFile> {
     try {
+        const table = req.params.table as string;
         const upload = await handleUpload(req, {uploadPath: '/var/tmp/chums', keepOriginalFilename: true});
         const newPath = `/var/tmp/chums/${upload.originalFilename || upload.newFilename}`;
-        return {path: newPath, table: req.params.table};
+        return {path: newPath, table};
     } catch (err) {
         if (err instanceof Error) {
             debug("uploadFile()", err.message);
@@ -44,10 +43,10 @@ const uploadFile = async (req:Request) => {
         debug("uploadFile()", err);
         return Promise.reject(new Error('Error in uploadFile()'));
     }
-};
+}
 
 
-export const postFile = async (req:RequestWithSockets, res:Response) => {
+export async function postFile(req: RequestWithSockets, res: Response) {
     try {
         if (req.wsServer) {
             req.wsServer.clients.forEach(client => client.send(JSON.stringify(req.params)));
@@ -55,7 +54,7 @@ export const postFile = async (req:RequestWithSockets, res:Response) => {
         const {path, table} = await uploadFile(req);
         const result = await processFile({path, table});
         res.json({result});
-    } catch(err:unknown) {
+    } catch (err: unknown) {
         if (err instanceof Error) {
             debug("postFile()", err.message);
             res.json({error: err.message, name: err.name});
@@ -63,7 +62,5 @@ export const postFile = async (req:RequestWithSockets, res:Response) => {
         }
         res.json({error: 'unknown error in postFile'});
     }
-};
-
-
+}
 
